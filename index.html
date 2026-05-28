@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>liquidframe — pure-CSS iPhone + iOS 26 Safari mockup</title>
+  <link rel="stylesheet" href="liquidframe.css">
+  <style>
+    /* ── Example page chrome only — NOT part of liquidframe.css ── */
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(120, 119, 198, 0.18), transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(255, 122, 89, 0.14), transparent 40%),
+        #0c0d12;
+      color: #e9eaf0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      padding: 3rem 1rem 4rem;
+    }
+    .page-head { text-align: center; max-width: 560px; }
+    .page-head h1 { font-size: 2rem; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+    .page-head h1 span { color: #9b9bff; }
+    .page-head p { margin: 0; color: rgba(233, 234, 240, 0.6); line-height: 1.5; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .control-group { display: flex; flex-direction: column; gap: 0.4rem; align-items: center; }
+    .control-group > label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(233,234,240,0.45); }
+    .seg {
+      display: inline-flex;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .seg button {
+      border: 0;
+      background: transparent;
+      color: rgba(233, 234, 240, 0.7);
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.4rem 0.8rem;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .seg button.active { background: #6d6dff; color: #fff; }
+    .swatches { display: inline-flex; gap: 0.5rem; }
+    .swatches button {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid transparent; cursor: pointer; padding: 0;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .swatches button.active { border-color: #fff; transform: scale(1.12); }
+
+    /* ── Sample content inside the phone screen (your app would go here) ── */
+    .demo-page {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(180deg, #6d6dff 0%, #8e5bd8 55%, #b0479a 100%);
+    }
+    .demo-hero {
+      min-height: 100cqh;
+      padding: 90px 26px 50px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 0.6rem;
+    }
+    .demo-hero .badge {
+      width: 64px; height: 64px; border-radius: 18px;
+      background: rgba(255, 255, 255, 0.18);
+      display: grid; place-items: center; font-size: 2rem; margin-bottom: 0.6rem;
+    }
+    .demo-hero h2 { font-size: 1.5rem; margin: 0; letter-spacing: -0.02em; }
+    .demo-hero p { margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.82); line-height: 1.5; }
+    .demo-belt { background: #2c2350; padding: 56px 22px 64px; }
+    .demo-belt .tag { font-size: 0.62rem; letter-spacing: 0.25em; color: #b9b3ff; margin: 0 0 1.4rem; font-weight: 700; }
+    .demo-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px; padding: 18px; margin-bottom: 12px;
+    }
+    .demo-card h4 { margin: 0 0 6px; font-size: 1.05rem; }
+    .demo-card p { margin: 0; font-size: 0.8rem; color: rgba(255,255,255,0.72); line-height: 1.5; }
+    .demo-footer {
+      background: #1a1430; padding: 48px 22px calc(40px + var(--sim-safe-bottom));
+      text-align: center; color: rgba(255,255,255,0.65); font-size: 0.8rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .ghlink { color: #9b9bff; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="page-head">
+    <h1><span>liquidframe</span></h1>
+    <p>A pure-CSS iPhone 16 Pro with realistic iOS&nbsp;26 "Liquid Glass" Safari chrome.
+       Swap one class to change the chrome mode. Drop your page into the screen.</p>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Chrome mode</label>
+      <div class="seg" id="mode-seg">
+        <button data-mode="compact" class="active">Compact</button>
+        <button data-mode="bottom">Bottom</button>
+        <button data-mode="top">Top</button>
+        <button data-mode="pwa">PWA</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <label>Titanium</label>
+      <div class="swatches" id="frame-swatches">
+        <button data-finish="natural" class="active" style="background:#a69f96" title="Natural"></button>
+        <button data-finish="desert" style="background:#c2b29f" title="Desert"></button>
+        <button data-finish="black" style="background:#3c3d3a" title="Black"></button>
+        <button data-finish="white" style="background:#e3e4e5" title="White"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ liquidframe markup ════════════════ -->
+  <div class="simulator-container">
+    <div class="phone-frame chrome-compact" id="phone">
+
+      <!-- Physical hardware: protruding side buttons -->
+      <div class="phone-btn phone-btn-action" title="Action Button"></div>
+      <div class="phone-btn phone-btn-volup" title="Volume Up"></div>
+      <div class="phone-btn phone-btn-voldown" title="Volume Down"></div>
+      <div class="phone-btn phone-btn-power" title="Power Button"></div>
+
+      <!-- Dynamic Island -->
+      <div class="phone-notch"></div>
+
+      <div class="phone-viewport" style="--screen-bg:#1a1430;">
+
+        <!-- Status bar -->
+        <div class="status-bar-info">
+          <div><span data-lf-clock>9:41</span></div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <svg width="19" height="13" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.9;">
+              <rect x="1" y="16" width="3.5" height="5" rx="0.5"/>
+              <rect x="6.5" y="12" width="3.5" height="9" rx="0.5"/>
+              <rect x="12" y="7.5" width="3.5" height="13.5" rx="0.5"/>
+              <rect x="17.5" y="3" width="3.5" height="18" rx="0.5" opacity="0.3"/>
+            </svg>
+            <svg width="18" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.9;">
+              <path d="M12 20h.01"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M5 13a10 10 0 0 1 14 0"/><path d="M1.5 9.5a15 15 0 0 1 21 0"/>
+            </svg>
+            <svg width="25" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px; opacity:0.9;">
+              <rect x="1" y="5" width="18" height="14" rx="3" ry="3"/>
+              <line x1="22" y1="10" x2="22" y2="14"/>
+              <rect x="3" y="7" width="12" height="10" rx="1.5" ry="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Safari "Top" URL capsule -->
+        <div class="sim-safari-top-capsule">
+          <div class="safari-capsule-address-box">
+            <span class="safari-icon-page-menu">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </span>
+            <span class="safari-url">liquidframe.dev</span>
+            <span class="safari-icon-reload">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Safari "Bottom" / "Top" liquid bar -->
+        <div class="sim-safari-bottom-liquid-bar">
+          <div class="safari-liquid-address-row">
+            <div class="safari-capsule-address-box">
+              <span class="safari-icon-page-menu">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </span>
+              <span class="safari-url">liquidframe.dev</span>
+              <span class="safari-icon-reload">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              </span>
+            </div>
+          </div>
+          <div class="safari-liquid-buttons-row">
+            <div class="safari-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="safari-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="safari-btn"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></div>
+            <div class="safari-btn"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <div class="safari-btn"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="13" height="13" rx="2" ry="2"/><path d="M9 21h10a2 2 0 0 0 2-2V9"/></svg></div>
+          </div>
+        </div>
+
+        <!-- Safari "Compact" 3-capsule bar -->
+        <div class="sim-safari-compact-bar">
+          <div class="compact-capsule compact-capsule-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="compact-capsule compact-capsule-pill">
+            <span class="compact-pill-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+            <span class="compact-pill-url">liquidframe.dev</span>
+            <span class="compact-pill-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
+          </div>
+          <div class="compact-capsule compact-capsule-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </div>
+        </div>
+
+        <!-- Bottom safe-area tint band -->
+        <div class="home-indicator-area"></div>
+
+        <!-- Your scrollable page content -->
+        <div class="phone-screen">
+          <div class="demo-page">
+            <section class="demo-hero">
+              <div class="badge">📱</div>
+              <h2>Drop your page here</h2>
+              <p>Everything inside <code>.phone-screen</code> is yours. Scroll to see the chrome stay pinned.</p>
+            </section>
+            <section class="demo-belt">
+              <p class="tag">WHY GLASSFRAME</p>
+              <div class="demo-card"><h4>Pure CSS</h4><p>No build step, no framework. One stylesheet and a chunk of HTML.</p></div>
+              <div class="demo-card"><h4>iOS 26 accurate</h4><p>Compact, Bottom, Top and PWA chrome — each with the right safe-area insets.</p></div>
+              <div class="demo-card"><h4>Themeable</h4><p>Tint the chrome with <code>--chrome-top</code> / <code>--chrome-bot</code> to mock any app.</p></div>
+            </section>
+            <footer class="demo-footer">
+              <div>Built with <a class="ghlink" href="#">liquidframe</a></div>
+              <div>MIT License</div>
+            </footer>
+          </div>
+        </div>
+
+        <!-- Optional scroll hint -->
+        <div class="scroll-prompt-overlay">
+          <svg width="24" height="36" viewBox="0 0 24 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="30" rx="9" ry="9"/><line class="scroll-wheel" x1="12" y1="8" x2="12" y2="14"/></svg>
+          <svg class="prompt-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px;"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { enhance, setChromeMode, setTitanium } from './liquidframe.js';
+    enhance();
+
+    const phone = document.getElementById('phone');
+
+    document.getElementById('mode-seg').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      setChromeMode(phone, btn.dataset.mode);
+      btn.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
+    });
+
+    document.getElementById('frame-swatches').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      setTitanium(phone, btn.dataset.finish);
+      btn.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
+    });
+  </script>
+</body>
+</html>

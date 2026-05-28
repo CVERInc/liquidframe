@@ -1,0 +1,36 @@
+{
+  "name": "liquidframe",
+  "version": "0.1.0",
+  "description": "Pure-CSS iPhone 16 Pro mockup with realistic iOS 26 Liquid Glass Safari chrome (Compact / Bottom / Top / PWA). Zero dependencies — one stylesheet and some HTML.",
+  "type": "module",
+  "main": "liquidframe.js",
+  "style": "liquidframe.css",
+  "exports": {
+    ".": "./liquidframe.js",
+    "./css": "./liquidframe.css"
+  },
+  "files": [
+    "liquidframe.css",
+    "liquidframe.js",
+    "index.html",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "ios",
+    "iphone",
+    "safari",
+    "ios26",
+    "liquid-glass",
+    "mockup",
+    "device-frame",
+    "simulator",
+    "css",
+    "zero-config"
+  ],
+  "license": "MIT",
+  "sideEffects": [
+    "liquidframe.js",
+    "*.css"
+  ]
+}

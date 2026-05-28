@@ -1,0 +1,516 @@
+/* ===========================================================================
+   liquidframe — a pure-CSS iPhone 16 Pro + iOS 26 "Liquid Glass" Safari mockup.
+
+   Structure:
+     .phone-frame.chrome-compact        ← set the chrome mode here (one class)
+       .phone-btn ...                    physical side buttons
+       .phone-notch                      Dynamic Island
+       .phone-viewport
+         .status-bar-info                top status bar (clock + icons)
+         .sim-safari-top-capsule         Safari "Top" URL pill
+         .sim-safari-bottom-liquid-bar   Safari "Bottom" bar
+         .sim-safari-compact-bar         Safari "Compact" 3-capsule bar
+         .home-indicator-area            bottom safe-area band
+         .phone-screen                   ← YOUR scrollable content goes here
+           ...your page...
+
+   Chrome modes (swap the class on .phone-frame):
+     .chrome-compact   iOS 26 Compact (3-capsule bottom bar)        [default]
+     .chrome-bottom    iOS Bottom (URL row + buttons row)
+     .chrome-top       iOS Top (URL pill up top, buttons down low)
+     .chrome-pwa       Standalone / installed PWA (no Safari chrome)
+
+   Theming variables (set on .phone-frame or :root):
+     --screen-bg       backdrop shown in the rubber-band/overscroll area
+     --chrome-top      tint painted behind the status bar (default transparent)
+     --chrome-bot      tint painted in the bottom safe-area (default transparent)
+     --status-fg       status bar text/icon color (default #fff)
+
+   Titanium finishes (add to .phone-frame): .frame-desert .frame-black .frame-white
+   (default, no class = Natural Titanium)
+
+   MIT License.
+   =========================================================================== */
+
+/* Optional centering wrapper for the phone. */
+.simulator-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Phone Frame — iPhone 16 Pro corner geometry. Apple uses a G2-
+   curvature-continuous squircle. Values are tuned for the
+   standard 6.3" Pro class around 375px width. */
+.phone-frame {
+  /* Simulated safe areas — calibrated to iPhone 16 Pro Dynamic Island.
+     Chrome-mode classes below override --sim-safe-bottom / --sim-safe-top. */
+  --sim-safe-top: 50px;
+  --sim-safe-bottom: 34px;
+
+  /* Titanium frame color variables (defaults to Natural Titanium) */
+  --titanium-outer: #a69f96;
+  --titanium-inner: #8c857c;
+  --titanium-highlight: rgba(255, 255, 255, 0.25);
+  --titanium-btn-shadow: rgba(0, 0, 0, 0.45);
+
+  width: 375px;
+  height: 812px;
+  background: #000;
+  /* iPhone 16 Pro ultra-thin bezel — real device single-side bezel ≈ 2.0% of width */
+  border: 5.5px solid #000000;
+  border-radius: 52px; /* G2 continuous curvature outer frame */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  /* Titanium chassis — slim 1.5px metal band matching real device proportions */
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.75),            /* Ambient drop shadow */
+    0 0 0 1px var(--titanium-outer),                   /* Titanium outer chamfer */
+    0 0 0 1.5px var(--titanium-inner),                 /* Titanium chassis edge */
+    0 0 0 2px rgba(0, 0, 0, 0.3),                      /* Antenna line / gasket seam */
+    inset 0 0 0 1px var(--titanium-highlight),          /* Inner metal chamfer highlight */
+    inset 0 0 6px rgba(0, 0, 0, 0.85);                 /* Bezel-to-screen deep shading */
+
+  transition: box-shadow 0.3s ease;
+}
+
+/* Titanium Finishes */
+.phone-frame.frame-desert {
+  --titanium-outer: #c2b29f;
+  --titanium-inner: #b09e8b;
+  --titanium-highlight: rgba(255, 245, 230, 0.3);
+}
+
+.phone-frame.frame-black {
+  --titanium-outer: #3c3d3a;
+  --titanium-inner: #252624;
+  --titanium-highlight: rgba(255, 255, 255, 0.12);
+}
+
+.phone-frame.frame-white {
+  --titanium-outer: #e3e4e5;
+  --titanium-inner: #c5c6c7;
+  --titanium-highlight: rgba(255, 255, 255, 0.5);
+}
+
+/* Phone Buttons — Protruding side buttons.
+   Position math: for position:absolute children of .phone-frame,
+   left: 0 is the PADDING edge (inside the border). The border is 5.5px
+   and the titanium box-shadow extends another ~2px. To place buttons
+   OUTSIDE the outer titanium edge, we need left: -(border + shadow + width). */
+.phone-btn {
+  position: absolute;
+  background: var(--titanium-outer);
+  z-index: 10;
+  box-shadow:
+    -1px 0 2px rgba(0, 0, 0, 0.4),
+    inset 1px 0 1px var(--titanium-highlight);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Left side buttons — protrude from the left titanium edge */
+.phone-btn-action,
+.phone-btn-volup,
+.phone-btn-voldown {
+  left: -12.5px; /* -(5.5 border + 2 shadow + 2 gap + 3 width) */
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+}
+
+.phone-btn-action { top: 130px; height: 32px; }
+.phone-btn-volup  { top: 180px; height: 62px; }
+.phone-btn-voldown { top: 252px; height: 62px; }
+
+/* Right side button — protrudes from the right titanium edge */
+.phone-btn-power {
+  right: -12.5px; /* -(5.5 border + 2 shadow + 2 gap + 3 width) */
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  box-shadow:
+    1px 0 2px rgba(0, 0, 0, 0.4),
+    inset -1px 0 1px var(--titanium-highlight);
+  top: 176px;
+  height: 80px;
+}
+
+/* Phone Viewport Inner Wrapper — clips everything inside the phone screen
+   and hosts the fixed chrome/overlays. Inner radius = outer 52px − border 5.5px = 46.5px */
+.phone-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 46.5px;
+  /* Backdrop shown in the rubber-band/overscroll exposed area. */
+  background-color: var(--screen-bg, #ffffff);
+  transition: background-color 400ms ease;
+}
+
+/* iPhone Screen Inner — your content scrolls here. */
+.phone-screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  border-radius: 46.5px;
+  /* Expose the screen height as a container-query unit so content can size
+     itself to the full viewport (e.g. a hero with min-height: 100cqh). */
+  container-type: size;
+  container-name: phone;
+  z-index: 2;
+  background: transparent;
+}
+
+.phone-screen::-webkit-scrollbar { display: none; }
+
+/* Phone Notch Simulator (Dynamic Island) — 110pt × 30pt mapped to 375px width ≈ 102px × 28px */
+.phone-notch {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 102px;
+  height: 28px;
+  background: #000;
+  border-radius: 9999px;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.phone-notch::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  width: 9px;
+  height: 9px;
+  background: #0f1015;
+  border-radius: 50%;
+  opacity: 0.75;
+  box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.phone-notch::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #0a2540 10%, #000 80%);
+  border-radius: 50%;
+  opacity: 0.55;
+}
+
+/* Status Bar Info — height 50px with flex centering places contents at
+   the Dynamic Island vertical center: top 11px + height 28px / 2 = 25px. */
+.status-bar-info {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--status-fg, #fff);
+  z-index: 1000;
+  pointer-events: none;
+  background-color: var(--chrome-top, transparent);
+  transition: background-color 400ms ease, color 250ms ease;
+  box-sizing: border-box;
+}
+.status-bar-info > div {
+  height: 100%;
+  align-items: center !important;
+  line-height: 1;
+  display: flex;
+}
+
+/* Bottom safe-area tint band — sits "below" the Safari bottom bar so the
+   rubber-band-overscroll equivalent is visually consistent. iOS 26 Safari
+   no longer paints a visible home indicator pill here, so this is just a
+   tinted strip you can color via --chrome-bot. */
+.home-indicator-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--sim-safe-bottom);
+  z-index: 1;
+  pointer-events: none;
+  background-color: var(--chrome-bot, transparent);
+  transition: background-color 400ms ease;
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   Simulated Safari Shell — iOS 26 Liquid Glass capsules.
+   These sit INSIDE the safe-area region near the viewport edge, on top of
+   the page content, with a translucent frosted backdrop — matching how iOS
+   actually positions the URL pill / button row.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* Top URL capsule (Safari "Top" layout). */
+.sim-safari-top-capsule {
+  position: absolute;
+  /* Anchored to the bottom of safe-area-top: the capsule sits right below
+     the status bar, hugging the chrome edge. */
+  top: calc(var(--sim-safe-top) - 50px);
+  left: 16px;
+  right: 16px;
+  height: 42px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background-color: rgba(28, 28, 30, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1001;
+  display: none;
+  align-items: center;
+  padding: 0 14px;
+  box-sizing: border-box;
+}
+
+.safari-capsule-address-box {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: white;
+}
+
+.safari-icon-page-menu,
+.safari-icon-reload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.safari-icon-page-menu { opacity: 0.9; }
+.safari-icon-reload { opacity: 0.8; }
+.safari-icon-page-menu svg,
+.safari-icon-reload svg { display: block; }
+
+.safari-url {
+  font-family: -apple-system, system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Unified Bottom Liquid Bar (iOS 26 Liquid Glass).
+   Sits INSIDE the safe-area-bottom region (right against the chrome edge). */
+.sim-safari-bottom-liquid-bar {
+  position: absolute;
+  bottom: 14px;
+  left: 16px;
+  right: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  display: none;
+  flex-direction: column;
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+  pointer-events: auto;
+  background-color: rgba(28, 28, 30, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Sub rows inside the bottom liquid bar. */
+.safari-liquid-address-row { width: 100%; display: none; }
+
+.safari-liquid-buttons-row {
+  width: 100%;
+  height: 36px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.safari-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 0.9;
+  cursor: default;
+  transition: opacity 0.1s ease;
+}
+/* Grey out the forward button for realism (like in screenshots). */
+.safari-liquid-buttons-row .safari-btn:nth-child(2) { color: rgba(255, 255, 255, 0.35); }
+.safari-btn svg { display: block; }
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPACT MODE — 3-Capsule Bottom Bar
+   Real iOS Safari Compact layout:
+   [◁ circle]  [▢ tabs · url · ↻ reload]  [··· circle]
+   ═══════════════════════════════════════════════════════════════ */
+.sim-safari-compact-bar {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  right: 30px;
+  z-index: 1001;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+/* Shared capsule base — translucent frosted glass */
+.compact-capsule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(28, 28, 30, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Circle capsules (back & more) */
+.compact-capsule-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Center pill capsule (tabs + url + reload) */
+.compact-capsule-pill {
+  flex: 1;
+  height: 44px;
+  border-radius: 99px;
+  padding: 0 14px;
+  gap: 8px;
+}
+
+.compact-pill-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.compact-pill-url {
+  font-family: -apple-system, system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.95);
+  flex: 1;
+  text-align: center;
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   CHROME MODES — one class on .phone-frame drives safe-area insets AND
+   which Safari chrome elements are visible. No JavaScript required.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* Compact (default): 3-capsule bar near the bottom. */
+.phone-frame.chrome-compact {
+  --sim-safe-top: 50px;
+  --sim-safe-bottom: 94px;
+}
+.phone-frame.chrome-compact .sim-safari-compact-bar { display: flex; }
+
+/* Bottom: single card with an address row + a buttons row. */
+.phone-frame.chrome-bottom {
+  --sim-safe-top: 50px;
+  --sim-safe-bottom: 128px;
+}
+.phone-frame.chrome-bottom .sim-safari-bottom-liquid-bar {
+  display: flex;
+  height: 98px;
+  border-radius: 24px;
+  padding: 10px 14px;
+  justify-content: space-between;
+}
+.phone-frame.chrome-bottom .safari-liquid-address-row { display: block; }
+.phone-frame.chrome-bottom .safari-liquid-address-row .safari-capsule-address-box {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 99px;
+  padding: 0 12px;
+  height: 36px;
+  box-sizing: border-box;
+}
+.phone-frame.chrome-bottom .safari-liquid-buttons-row { display: flex; }
+
+/* Top: URL pill up top, a slim buttons-only bar down low. */
+.phone-frame.chrome-top {
+  --sim-safe-top: 104px;
+  --sim-safe-bottom: 78px;
+}
+.phone-frame.chrome-top .sim-safari-top-capsule { display: flex; }
+.phone-frame.chrome-top .sim-safari-bottom-liquid-bar {
+  display: flex;
+  height: 48px;
+  border-radius: 99px;
+  padding: 0 14px;
+  justify-content: center;
+}
+.phone-frame.chrome-top .safari-liquid-buttons-row { display: flex; }
+
+/* PWA / standalone: no Safari chrome, minimal insets. */
+.phone-frame.chrome-pwa {
+  --sim-safe-top: 50px;
+  --sim-safe-bottom: 34px;
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   Optional: Scroll Prompt Overlay — a hint that the screen scrolls.
+   Toggle its opacity from JS (see liquidframe.js) or remove it entirely.
+   ─────────────────────────────────────────────────────────────────────── */
+.scroll-prompt-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.55);
+  width: 56px;
+  height: 64px;
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.4s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.scroll-wheel { animation: lf-scrollWheel 1.6s infinite ease-in-out; }
+@keyframes lf-scrollWheel {
+  0% { transform: translateY(0); opacity: 1; }
+  35% { transform: translateY(5px); opacity: 0.3; }
+  36% { opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+
+.prompt-arrow { animation: lf-bounceArrow 1.6s infinite ease-in-out; }
+@keyframes lf-bounceArrow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
