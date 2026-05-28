@@ -6,6 +6,8 @@
 [![Zero dependencies](https://img.shields.io/badge/dependencies-0-success)](#)
 [![Pure CSS](https://img.shields.io/badge/core-pure%20CSS-blue)](#)
 
+> **[Live demo →](https://oss.cver.net/liquidframe/)**
+
 ---
 
 ## Why
