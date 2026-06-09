@@ -40,10 +40,16 @@
   justify-content: center;
 }
 
-/* Phone Frame — iPhone 16 Pro corner geometry. Apple uses a G2-
-   curvature-continuous squircle. Values are tuned for the
-   standard 6.3" Pro class around 375px width. */
+/* Phone Frame — iPhone 16 Pro corner geometry. Apple uses a continuous-
+   curvature squircle; we reproduce it with CSS `corner-shape: squircle`
+   (the real superellipse(2), not a circular arc), sized by border-radius.
+   Browsers without corner-shape gracefully fall back to the rounded arc.
+   Values are tuned for the standard 6.3" Pro class around 375px width. */
 .phone-frame {
+  /* Continuous-curvature corner shape, shared by the frame + inner screen
+     layers below (custom property inherits; corner-shape itself does not). */
+  --lf-corner: squircle;
+
   /* Simulated safe areas — calibrated to iPhone 16 Pro Dynamic Island.
      Chrome-mode classes below override --sim-safe-bottom / --sim-safe-top. */
   --sim-safe-top: 50px;
@@ -60,7 +66,8 @@
   background: #000;
   /* iPhone 16 Pro ultra-thin bezel — real device single-side bezel ≈ 2.0% of width */
   border: 5.5px solid #000000;
-  border-radius: 52px; /* G2 continuous curvature outer frame */
+  border-radius: 52px; /* outer frame radius (sizes the squircle) */
+  corner-shape: var(--lf-corner);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -145,6 +152,7 @@
   flex: 1;
   overflow: hidden;
   border-radius: 46.5px;
+  corner-shape: var(--lf-corner);
   /* Backdrop shown in the rubber-band/overscroll exposed area. */
   background-color: var(--screen-bg, #ffffff);
   transition: background-color 400ms ease;
@@ -158,6 +166,7 @@
   overscroll-behavior: contain;
   scrollbar-width: none;
   border-radius: 46.5px;
+  corner-shape: var(--lf-corner);
   /* Expose the screen height as a container-query unit so content can size
      itself to the full viewport (e.g. a hero with min-height: 100cqh). */
   container-type: size;
@@ -440,6 +449,7 @@
   display: flex;
   height: 98px;
   border-radius: 24px;
+  corner-shape: var(--lf-corner);
   padding: 10px 14px;
   justify-content: space-between;
 }
