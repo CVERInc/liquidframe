@@ -3,10 +3,10 @@
 > **A pure-CSS iPhone 16 Pro with a realistic iOS 26 "Liquid Glass" Safari shell.** Titanium frame, Dynamic Island, protruding buttons — and Safari's chrome in every layout (Compact, Bottom, Top) plus standalone PWA, each with its correct safe-area insets. Swap one class to change the mode. Drop your page into the screen. No build step, no dependencies.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Zero dependencies](https://img.shields.io/badge/dependencies-0-success)](#)
-[![Pure CSS](https://img.shields.io/badge/core-pure%20CSS-blue)](#)
+![Zero dependencies](https://img.shields.io/badge/dependencies-0-success)
+![Pure CSS](https://img.shields.io/badge/core-pure%20CSS-blue)
 
-🌐 日本語の紹介 → [cver.net/ja-jp/oss/liquidframe](https://cver.net/ja-jp/oss/liquidframe) ・ 繁體中文介紹 → [cver.net/zh-tw/oss/liquidframe](https://cver.net/zh-tw/oss/liquidframe)
+🌐 [日本語](https://cver.net/ja-jp/oss/liquidframe) · [한국어](https://cver.net/ko-kr/oss/liquidframe) · [繁體中文](https://cver.net/zh-tw/oss/liquidframe)
 
 > **[Live demo →](https://oss.cver.net/liquidframe/)**
 
