@@ -1,0 +1,46 @@
+# CVER OSS shared delivery baseline — Node CI template (dim 7).
+#
+# Vendored per-repo as `.github/workflows/ci.yml`. Designed to be portable across
+# the heterogeneous CVER Node repos with minimal per-repo edits:
+#
+#   - RUNNER: ubuntu-latest by default. Switch to macos-latest for repos that build
+#     native macOS code (Swift/Vision) — e.g. reepub. Use a matrix for cross-platform.
+#   - INSTALL: handles repos with and without a lockfile (npm ci vs npm install).
+#   - TEST/BUILD: `--if-present` so a repo missing either script is still green.
+#   - READINESS: the shared version + artifact-hygiene gate (single source of truth).
+#
+# The only line most repos need to change is `runs-on`.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest # macos-latest for native-macOS repos (reepub)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Test
+        run: npm test --if-present
+
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Release readiness
+        run: node scripts/check-release-readiness.mjs
