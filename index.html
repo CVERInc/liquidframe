@@ -190,21 +190,21 @@
 
   <div class="controls">
     <div class="control-group">
-      <label>Chrome mode</label>
-      <div class="seg" id="mode-seg">
-        <button data-mode="compact" class="active">Compact</button>
-        <button data-mode="bottom">Bottom</button>
-        <button data-mode="top">Top</button>
-        <button data-mode="pwa">PWA</button>
+      <label id="mode-label">Chrome mode</label>
+      <div class="seg" id="mode-seg" role="group" aria-labelledby="mode-label">
+        <button type="button" data-mode="compact" class="active" aria-pressed="true">Compact</button>
+        <button type="button" data-mode="bottom" aria-pressed="false">Bottom</button>
+        <button type="button" data-mode="top" aria-pressed="false">Top</button>
+        <button type="button" data-mode="pwa" aria-pressed="false">PWA</button>
       </div>
     </div>
     <div class="control-group">
-      <label>Titanium</label>
-      <div class="swatches" id="frame-swatches">
-        <button data-finish="natural" class="active" style="background:#a69f96" title="Natural"></button>
-        <button data-finish="desert" style="background:#c2b29f" title="Desert"></button>
-        <button data-finish="black" style="background:#3c3d3a" title="Black"></button>
-        <button data-finish="white" style="background:#e3e4e5" title="White"></button>
+      <label id="frame-label">Titanium</label>
+      <div class="swatches" id="frame-swatches" role="group" aria-labelledby="frame-label">
+        <button type="button" data-finish="natural" class="active" style="background:#a69f96" title="Natural" aria-label="Natural" aria-pressed="true"></button>
+        <button type="button" data-finish="desert" style="background:#c2b29f" title="Desert" aria-label="Desert" aria-pressed="false"></button>
+        <button type="button" data-finish="black" style="background:#3c3d3a" title="Black" aria-label="Black" aria-pressed="false"></button>
+        <button type="button" data-finish="white" style="background:#e3e4e5" title="White" aria-label="White" aria-pressed="false"></button>
       </div>
     </div>
   </div>
@@ -357,18 +357,28 @@
 
     const phone = document.getElementById('phone');
 
+    // Reflect the chosen button in both the .active class (styling) and
+    // aria-pressed (assistive tech), so selection state isn't visual-only.
+    const selectOne = (group, btn) => {
+      group.querySelectorAll('button').forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+    };
+
     document.getElementById('mode-seg').addEventListener('click', (e) => {
       const btn = e.target.closest('button');
       if (!btn) return;
       setChromeMode(phone, btn.dataset.mode);
-      btn.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
+      selectOne(btn.parentElement, btn);
     });
 
     document.getElementById('frame-swatches').addEventListener('click', (e) => {
       const btn = e.target.closest('button');
       if (!btn) return;
       setTitanium(phone, btn.dataset.finish);
-      btn.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
+      selectOne(btn.parentElement, btn);
     });
   </script>
 
