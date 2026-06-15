@@ -9,6 +9,9 @@
     ".": "./liquidframe.js",
     "./css": "./liquidframe.css"
   },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
   "files": [
     "liquidframe.css",
     "liquidframe.js",

@@ -39,25 +39,50 @@ export function setTitanium(frame, finish) {
   if (finish !== 'natural') frame.classList.add('frame-' + finish);
 }
 
+// Render the current HH:MM into `el`. Exported for testing; not part of the
+// public API surface documented in the README.
+export function formatClock(now = new Date()) {
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
 function startClock(el) {
   const tick = () => {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    el.textContent = `${hh}:${mm}`;
+    el.textContent = formatClock();
+    // Re-arm aligned to the next minute boundary so the displayed minute is
+    // never stale (a fixed 30s interval can lag by up to ~30s after a minute
+    // rolls over). +20ms guards against firing a hair early due to timer drift.
+    const msToNextMinute = 60000 - (Date.now() % 60000);
+    setTimeout(tick, msToNextMinute + 20);
   };
   tick();
-  setInterval(tick, 30000);
+}
+
+// Decide whether a wheel delta can still be consumed by the screen in that
+// direction. If the screen is already pinned at the top (scrolling up) or the
+// bottom (scrolling down), the wheel should fall through to the page instead of
+// being trapped on the frame. Exported for testing.
+export function canScreenConsumeWheel(screen, deltaY) {
+  const max = screen.scrollHeight - screen.clientHeight;
+  if (max <= 0) return false; // nothing to scroll
+  if (deltaY < 0) return screen.scrollTop > 0; // scrolling up
+  if (deltaY > 0) return screen.scrollTop < max; // scrolling down
+  return false; // no vertical delta
 }
 
 function wireScreen(frame) {
   const screen = frame.querySelector('.phone-screen');
   if (!screen) return;
 
-  // Redirect desktop wheel events anywhere on the frame into the screen.
+  // Redirect desktop wheel events anywhere on the frame into the screen — but
+  // only swallow the event while the screen can actually scroll further in that
+  // direction. At the top/bottom edge we let the wheel bubble so the outer page
+  // keeps scrolling instead of being trapped on the mockup.
   frame.addEventListener(
     'wheel',
     (e) => {
+      if (!canScreenConsumeWheel(screen, e.deltaY)) return;
       screen.scrollTop += e.deltaY;
       e.preventDefault();
     },
