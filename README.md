@@ -133,6 +133,10 @@ The screen is a [container](https://developer.mozilla.org/docs/Web/CSS/CSS_conta
 
 Works anywhere `backdrop-filter` and CSS container queries are supported — every current evergreen browser (Chrome, Safari, Firefox, Edge). It renders identically on desktop and mobile; it is a *visual mockup*, not a behavioral emulator.
 
+**Continuous-curvature corners (`corner-shape`)** are a progressive enhancement. The frame and screen draw Apple's true squircle via [`corner-shape: squircle`](https://developer.mozilla.org/docs/Web/CSS/corner-shape), which only the newest engines support (Chrome/Edge 139+). Every browser that doesn't recognize it simply renders the `border-radius` circular-arc corner instead — same size, slightly rounder. Nothing breaks and there is no JavaScript fallback to load.
+
+**Optional JavaScript** loaded as a plain `<script>` auto-runs `enhance()` exactly once — it waits for `DOMContentLoaded` if the document is still parsing, and runs immediately otherwise (e.g. when the tag is at the end of `<body>` or marked `defer`). Calling `enhance()` yourself again later is safe: each element is wired at most once, so there are no duplicate clocks or wheel handlers.
+
 ## License
 
 MIT
