@@ -1,6 +1,6 @@
 # liquidframe
 
-> **A pure-CSS iPhone 16 Pro with a realistic iOS 26 "Liquid Glass" Safari shell.** Titanium frame, Dynamic Island, protruding buttons — and Safari's chrome in every layout (Compact, Bottom, Top) plus standalone PWA, each with its correct safe-area insets. Swap one class to change the mode. Drop your page into the screen. No build step, no dependencies.
+> **A pure-CSS iPhone 16 Pro & 17 Pro with a realistic iOS 26 "Liquid Glass" Safari shell.** Titanium frame, Dynamic Island, protruding buttons — and Safari's chrome in every layout (Compact, Bottom, Top) plus standalone PWA, each with its correct safe-area insets. Swap one class to change the mode. Drop your page into the screen. No build step, no dependencies.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Zero dependencies](https://img.shields.io/badge/dependencies-0-success)
