@@ -6,7 +6,8 @@
 #   - RUNNER: ubuntu-latest by default. Switch to macos-latest for repos that build
 #     native macOS code (Swift/Vision) — e.g. reepub. Use a matrix for cross-platform.
 #   - INSTALL: handles repos with and without a lockfile (npm ci vs npm install).
-#   - TEST/BUILD: `--if-present` so a repo missing either script is still green.
+#   - TEST/BUILD: `--if-present` / a guarded build so a repo missing either script is
+#     still green — and the Build step says "no build script" instead of a silent ✓.
 #   - READINESS: the shared version + artifact-hygiene gate (single source of truth).
 #
 # The only line most repos need to change is `runs-on`.
@@ -15,6 +16,7 @@ name: ci
 on:
   push:
     branches: [main]
+    tags: ["v*"] # so the release-tag check in check-release-readiness.mjs actually runs
   pull_request:
     branches: [main]
 
@@ -40,7 +42,12 @@ jobs:
         run: npm test --if-present
 
       - name: Build
-        run: npm run build --if-present
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.build ? 0 : 1)"; then
+            npm run build
+          else
+            echo "::notice::no build script in package.json; build skipped"
+          fi
 
       - name: Release readiness
         run: node scripts/check-release-readiness.mjs

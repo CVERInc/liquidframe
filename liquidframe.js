@@ -17,8 +17,10 @@
      import { enhance, setChromeMode, setTitanium } from './liquidframe.js';
      enhance();                       // enhance every .phone-frame on the page
 
-   Usage (plain script): the script auto-runs enhance() on DOMContentLoaded and
-   exposes window.liquidframe = { enhance, setChromeMode, setTitanium }.
+   Usage (no import): <script type="module" src="liquidframe.js"></script>
+   auto-runs enhance() once the DOM is parsed and exposes
+   window.liquidframe = { enhance, setChromeMode, setTitanium }.
+   This file is an ES module; a classic (non-module) <script> can't load it.
 
    MIT License.
    =========================================================================== */

@@ -5,12 +5,17 @@
 // three things before a release is allowed out the door:
 //   1. The version is a single source of truth (every declared source agrees,
 //      and a `vX.Y.Z` release tag matches it).
-//   2. The CHANGELOG has an entry for the version being shipped.
+//   2. The CHANGELOG has an entry for the version being shipped — and, when
+//      actually releasing, nothing is left stranded under [Unreleased].
 //   3. The published artifact is clean (no node_modules / secrets / OS cruft /
 //      lockfiles leaking into the tarball, and it stays under a size budget).
 //
 // Zero-config on a standard npm repo. Tune via an optional `.release-readiness.json`
 // at the repo root. Run from the repo root: `node scripts/check-release-readiness.mjs`.
+//
+// Release mode (a `vX.Y.Z` tag run in CI, or `--release`, which `prepublishOnly`
+// passes) additionally fails while [Unreleased] still has entries: those changes
+// would ship under a version whose CHANGELOG section doesn't mention them.
 //
 // Exit code 0 = ready. Non-zero = at least one hard failure. Warnings never fail.
 
@@ -38,6 +43,9 @@ const DEFAULTS = {
   // Extra path patterns (regex strings) that must never appear in the tarball.
   forbidInPack: [],
 };
+
+const releaseTag = /^v\d/.test(process.env.GITHUB_REF_NAME ?? "") ? process.env.GITHUB_REF_NAME : null;
+const releaseMode = Boolean(releaseTag) || process.argv.includes("--release");
 
 const config = { ...DEFAULTS, ...(await readJsonOrNull(join(repoRoot, ".release-readiness.json"))) };
 
@@ -79,9 +87,8 @@ async function checkVersionConsistency() {
 
 async function checkReleaseTag() {
   // On a tag push GitHub sets GITHUB_REF_NAME to the tag. Only enforce for vX.Y.Z tags.
-  const ref = process.env.GITHUB_REF_NAME;
-  if (ref && /^v\d/.test(ref)) {
-    assert(ref === `v${version}`, `release tag ${ref} must match the package version v${version}.`);
+  if (releaseTag) {
+    assert(releaseTag === `v${version}`, `release tag ${releaseTag} must match the package version v${version}.`);
   }
 }
 
@@ -96,8 +103,14 @@ async function checkChangelog() {
   // Accept "## [1.2.3]", "## 1.2.3", "## v1.2.3" — common Keep-a-Changelog variants.
   const has = new RegExp(`^##\\s*\\[?v?${escapeRegex(version)}\\]?`, "m").test(text);
   assert(has, `${config.changelog} must contain a section for ${version} (e.g. "## [${version}]").`);
-  if (!/^##\s*\[?Unreleased\]?/im.test(text)) {
+  const unreleased = text.match(/^##\s*\[?Unreleased\]?[^\n]*\n([\s\S]*?)(?=^##\s|(?![\s\S]))/im);
+  if (!unreleased) {
     warn(`${config.changelog} has no [Unreleased] section to collect the next cycle's changes.`);
+  } else if (releaseMode && unreleased[1].trim() !== "") {
+    fail(
+      `${config.changelog} still has entries under [Unreleased]; move them into the ` +
+        `"## [${version}]" section (or bump the version) before releasing.`,
+    );
   }
 }
 
