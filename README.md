@@ -106,7 +106,11 @@ setTitanium(phoneEl, 'black');     // swap titanium finish
 ```
 
 - `enhance(root?)` — starts a live clock on any `[data-lf-clock]` element, redirects desktop wheel scrolling into the screen, and fades any `.scroll-prompt-overlay`.
-- Loaded as a plain `<script>`, it auto-runs `enhance()` and exposes `window.liquidframe`.
+- `liquidframe.js` is an ES module, so it can't be loaded as a classic `<script>` (that fails with `Unexpected token 'export'`). If you don't want to write an `import`, load it as a module script — it auto-runs `enhance()` and exposes `window.liquidframe`:
+
+  ```html
+  <script type="module" src="liquidframe.js"></script>
+  ```
 
 ---
 
@@ -135,7 +139,15 @@ Works anywhere `backdrop-filter` and CSS container queries are supported — eve
 
 **Continuous-curvature corners (`corner-shape`)** are a progressive enhancement. The frame and screen draw Apple's true squircle via [`corner-shape: squircle`](https://developer.mozilla.org/docs/Web/CSS/corner-shape), which only the newest engines support (Chrome/Edge 139+). Every browser that doesn't recognize it simply renders the `border-radius` circular-arc corner instead — same size, slightly rounder. Nothing breaks and there is no JavaScript fallback to load.
 
-**Optional JavaScript** loaded as a plain `<script>` auto-runs `enhance()` exactly once — it waits for `DOMContentLoaded` if the document is still parsing, and runs immediately otherwise (e.g. when the tag is at the end of `<body>` or marked `defer`). Calling `enhance()` yourself again later is safe: each element is wired at most once, so there are no duplicate clocks or wheel handlers.
+**Optional JavaScript** loaded via `<script type="module">` auto-runs `enhance()` exactly once — module scripts are deferred, so it runs once the document has been parsed (if the document is somehow still parsing, it waits for `DOMContentLoaded`). Calling `enhance()` yourself again later is safe: each element is wired at most once, so there are no duplicate clocks or wheel handlers.
+
+## Contributing
+
+`npm test` runs the zero-dependency test suite (Node 21+). `scripts/test.sh` runs the same steps as CI (install · test · build · release readiness). To run it automatically before every `git push`, enable the tracked pre-push hook once per clone:
+
+```sh
+git config core.hooksPath hooks
+```
 
 ## License
 
