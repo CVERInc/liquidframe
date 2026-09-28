@@ -33,6 +33,10 @@ class FakeEl {
     this.scrollHeight = 0;
     this.clientHeight = 0;
     this.style = {};
+    this._attrs = {};
+  }
+  setAttribute(name, value) {
+    this._attrs[name] = String(value);
   }
   addEventListener(type, fn, opts) {
     (this._listeners[type] ||= []).push({ fn, opts });
@@ -167,7 +171,7 @@ test('enhance wires a non-passive wheel handler that respects the clamp', () => 
 
 // --- enhance idempotency (rapid re-entry must not double-wire) --------------
 
-test('enhance is safe to call repeatedly: one wheel listener, one clock', () => {
+test('enhance is safe to call repeatedly: one wheel listener', () => {
   const { frame } = buildFrame();
   const root = new FakeEl();
   root.querySelectorAll = (sel) => (sel === '.phone-frame' ? [frame] : []);
@@ -177,4 +181,96 @@ test('enhance is safe to call repeatedly: one wheel listener, one clock', () => 
   enhance(root);
 
   assert.equal(frame._listeners.wheel.length, 1, 'wheel must be wired exactly once');
+});
+
+// --- live clock -------------------------------------------------------------
+
+function buildClock() {
+  const clock = new FakeEl('span');
+  clock.setAttribute('data-lf-clock', '');
+  return clock;
+}
+
+test('the attribute-selector stub matches [data-lf-clock]', () => {
+  const root = new FakeEl();
+  const clock = buildClock();
+  root.children.push(new FakeEl(), clock);
+  assert.deepEqual(root.querySelectorAll('[data-lf-clock]'), [clock]);
+});
+
+test('clock renders immediately and re-arms on the minute boundary', (t) => {
+  // 09:41:10 — a fixed 30s interval would tick at :40 and :10 and show a stale
+  // minute for ~10s after 09:42:00; the aligned timer flips right at :00.
+  t.mock.timers.enable({ apis: ['setTimeout', 'setInterval', 'Date'], now: new Date(2026, 0, 1, 9, 41, 10) });
+  const root = new FakeEl();
+  const clock = buildClock();
+  root.children.push(clock);
+
+  enhance(root);
+  assert.equal(clock.textContent, '09:41', 'clock must render on enhance(), not after the first tick');
+
+  t.mock.timers.tick(49_000); // 09:41:59
+  assert.equal(clock.textContent, '09:41');
+  t.mock.timers.tick(1_050); // 09:42:00.050
+  assert.equal(clock.textContent, '09:42', 'clock must roll over at the minute boundary');
+  t.mock.timers.tick(60_000); // 09:43:00.050
+  assert.equal(clock.textContent, '09:43');
+});
+
+test('enhance is safe to call repeatedly: one clock per element', (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'setInterval', 'Date'], now: new Date(2026, 0, 1, 9, 41, 10) });
+  const root = new FakeEl();
+  const clock = buildClock();
+  root.children.push(clock);
+  let writes = 0;
+  Object.defineProperty(clock, 'textContent', {
+    get: () => '',
+    set: () => { writes++; },
+  });
+
+  enhance(root);
+  enhance(root);
+  enhance(root);
+  assert.equal(writes, 1, 'repeated enhance() must not start extra clocks');
+
+  t.mock.timers.tick(60_000);
+  assert.equal(writes, 2, 'exactly one clock must be ticking');
+});
+
+// --- auto-run when loaded in a browser (<script type="module">) ------------
+
+async function loadInFakeBrowser(t, readyState) {
+  t.mock.timers.enable({ apis: ['setTimeout', 'setInterval', 'Date'], now: new Date(2026, 0, 1, 9, 41, 10) });
+  const doc = new FakeEl('#document');
+  doc.readyState = readyState;
+  const clock = buildClock();
+  const { frame } = buildFrame();
+  frame.classList.add('phone-frame');
+  doc.children.push(clock, frame);
+  globalThis.window = {};
+  globalThis.document = doc;
+  t.after(() => {
+    delete globalThis.window;
+    delete globalThis.document;
+  });
+  // A fresh module instance per test, so the top-level auto-run executes again.
+  await import(`../liquidframe.js?autorun=${readyState}`);
+  return { doc, clock, frame };
+}
+
+test('browser auto-run: exposes window.liquidframe and waits for DOMContentLoaded while parsing', async (t) => {
+  const { doc, clock, frame } = await loadInFakeBrowser(t, 'loading');
+  assert.deepEqual(Object.keys(globalThis.window.liquidframe).sort(), ['enhance', 'setChromeMode', 'setTitanium']);
+  assert.equal(clock.textContent, '', 'must not enhance before the DOM is parsed');
+
+  doc.dispatch('DOMContentLoaded');
+  assert.equal(clock.textContent, '09:41');
+  assert.equal(frame._listeners.wheel?.length, 1);
+});
+
+test('browser auto-run: enhances immediately once the DOM is parsed (module scripts are deferred)', async (t) => {
+  const { clock, frame } = await loadInFakeBrowser(t, 'interactive');
+  assert.equal(typeof globalThis.window.liquidframe.enhance, 'function');
+  assert.equal(clock.textContent, '09:41');
+  assert.equal(frame._listeners.wheel?.length, 1);
 });
